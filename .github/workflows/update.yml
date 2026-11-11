@@ -2,7 +2,7 @@ name: Měření a zveřejnění
 
 on:
   schedule:
-    - cron: "2 * * * *"
+    - cron: "17 * * * *"
   push:
     branches: [main]
   workflow_dispatch:
