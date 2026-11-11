@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Teploty mrazáků – výrobna kebabů</title>
+<meta name="description" content="Hodinová měření teplot mrazáků a chladicích boxů výrobny kebabů.">
+<link rel="stylesheet" href="fonts.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="kebab-tex.js"></script>
+</head>
+<body>
+<div id="dash-root">
+<style>
+html, body { margin: 0; padding: 0; background: #ffffff; }
+#dash-root { min-height: 100vh; }
+.kb { --blue: #002be1; --blue-glass: rgba(0, 43, 225, .9); --ink: #ffffff; --ink-2: rgba(255,255,255,.74); --line: rgba(255,252,247,.55); --line-soft: rgba(255,252,247,.22); --cool: #8fe9ff;
+  position: relative; min-height: 100vh; background: #ffffff; isolation: isolate; color: var(--ink);
+  font-family: 'Inter Tight KB', 'Inter Tight', 'Inter', system-ui, sans-serif; font-feature-settings: "tnum" 1; }
+.kb * { box-sizing: border-box; }
+.kb-bg { position: sticky; top: 0; height: 100vh; margin-bottom: -100vh; z-index: 0; pointer-events: none; overflow: hidden;
+  background: linear-gradient(180deg, #f2fafb, #ffffff); }
+.kb-bg canvas { width: 100%; height: 100%; display: block; }
+.kb-main { position: relative; z-index: 1; max-width: 1366px; margin: 0 auto; padding: clamp(12px, 3vw, 40px) clamp(12px, 3vw, 40px) 64px;
+  display: flex; flex-direction: column; gap: clamp(14px, 2.4vw, 28px); }
+.kb-panel { background: var(--blue-glass); backdrop-filter: blur(16px) saturate(1.1); -webkit-backdrop-filter: blur(16px) saturate(1.1);
+  padding: clamp(20px, 4vw, 54px); color: var(--ink); box-shadow: 0 24px 60px rgba(0,0,0,.35); }
+.kb-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.kb-kicker { margin: 0; font-weight: 600; font-size: clamp(13px, 1.4vw, 18.7px); line-height: 1.2; letter-spacing: -.006em; max-width: 34ch; }
+.kb-pill { display: inline-flex; align-items: center; gap: 10px; border: 1.5px solid var(--ink); border-radius: 999px; padding: 8px 8px 8px 18px;
+  color: var(--ink); background: transparent; font: inherit; font-weight: 700; font-size: clamp(13px, 1.3vw, 16px); text-transform: uppercase; letter-spacing: .01em;
+  cursor: pointer; text-decoration: none; white-space: nowrap; }
+.kb-pill i { width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--blue); display: inline-grid; place-items: center; font-style: normal; font-size: 14px; }
+.kb-pill:hover, .kb-pill:focus-visible { background: var(--ink); color: var(--blue); outline: none; }
+.kb-pill:hover i, .kb-pill:focus-visible i { background: var(--blue); color: var(--ink); }
+.kb-pill.solid { background: var(--ink); color: var(--blue); }
+.kb-pill.solid i { background: var(--blue); color: var(--ink); }
+.kb-pill.solid:hover { background: transparent; color: var(--ink); }
+.kb-pill.solid:hover i { background: var(--ink); color: var(--blue); }
+.kb-pill[disabled] { opacity: .5; cursor: progress; }
+.kb-hero { margin: clamp(18px, 3vw, 40px) 0 clamp(18px, 3vw, 34px); font-weight: 800; text-transform: uppercase; text-align: center;
+  font-size: clamp(38px, 8.2vw, 140px); line-height: .87; letter-spacing: -.067em; }
+.kb-rule { height: 1px; background: var(--line); border: 0; margin: 0 calc(-1 * clamp(20px, 4vw, 54px)); }
+.kb-meta { display: flex; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; margin-top: 18px; font-size: clamp(14px, 1.5vw, 18.7px); }
+.kb-meta p { margin: 0; }
+.kb-meta b { font-weight: 700; }
+.kb-meta span { color: var(--ink-2); }
+.kb-spacer { height: 42vh; }
+.kb-h2 { margin: 0; font-weight: 400; font-size: clamp(34px, 5.5vw, 74.7px); line-height: 1; letter-spacing: -.08em; }
+.kb-h2.caps { font-weight: 700; text-transform: uppercase; letter-spacing: -.04em; }
+.kb-lead { margin: 14px 0 0; max-width: 46ch; font-size: clamp(15px, 1.8vw, 24px); line-height: 1.4; color: var(--ink); }
+.kb-head-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: clamp(18px, 3vw, 32px); }
+.kb-seg { display: inline-flex; border: 1.5px solid var(--ink); border-radius: 999px; padding: 3px; gap: 2px; }
+.kb-seg button { border: 0; background: transparent; color: var(--ink); font: inherit; font-weight: 700; font-size: 13px; text-transform: uppercase; padding: 7px 14px; border-radius: 999px; cursor: pointer; }
+.kb-seg button.on { background: var(--ink); color: var(--blue); }
+.kb-dev { display: grid; grid-template-columns: minmax(180px, 1.05fr) minmax(130px, .7fr) minmax(0, 2.2fr); align-items: center; gap: 12px clamp(16px, 2.5vw, 36px);
+  padding: clamp(14px, 2vw, 22px) 0; border-top: 1px solid var(--line); }
+.kb-dev:last-child { border-bottom: 1px solid var(--line); }
+.kb-dev-name { display: flex; flex-direction: column; gap: 6px; }
+.kb-dev-name h3 { margin: 0; font-weight: 700; text-transform: uppercase; font-size: clamp(18px, 1.95vw, 26.7px); line-height: 1.1; letter-spacing: -.015em; }
+.kb-dev-name p { margin: 0; color: var(--ink-2); font-size: clamp(14px, 1.4vw, 18.7px); }
+.kb-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-2); }
+.kb-tag i { width: 9px; height: 9px; border-radius: 50%; background: var(--ink); }
+.kb-dev[data-kind="C"] .kb-tag i { background: var(--cool); }
+.kb-dev-val { display: flex; flex-direction: column; gap: 8px; }
+.kb-num { font-weight: 300; font-size: clamp(40px, 4.6vw, 64px); line-height: .95; letter-spacing: -.05em; white-space: nowrap; }
+.kb-num small { font-size: .38em; font-weight: 500; letter-spacing: 0; margin-left: 4px; color: var(--ink-2); }
+.kb-badge { align-self: flex-start; font-size: 12px; font-weight: 700; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; background: var(--ink); color: var(--blue); }
+.kb-badge.bad { background: #ff4d3d; color: #fff; }
+.kb-chart { position: relative; min-height: 120px; min-width: 0; }
+.kb-chart svg { display: block; overflow: visible; }
+.kb-chart .tick text { fill: var(--ink-2); font-size: 12px; font-family: inherit; }
+.kb-chart .tick line, .kb-chart .domain { stroke: var(--line-soft); }
+.kb-chart .grid line { stroke: var(--line-soft); }
+.kb-chart .grid .domain { display: none; }
+.kb-tip { position: absolute; pointer-events: none; z-index: 2; background: #fff; color: var(--blue); border-radius: 10px; padding: 6px 10px; font-size: 12px; white-space: nowrap; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+.kb-tip strong { display: block; font-size: 14px; }
+@media (max-width: 860px) {
+  .kb-dev { grid-template-columns: 1fr auto; }
+  .kb-chart { grid-column: 1 / -1; }
+  .kb-dev-val { align-items: flex-end; }
+  .kb-badge { align-self: flex-end; }
+}
+.kb-export { display: grid; grid-template-columns: 1fr; gap: 18px; margin-top: clamp(18px, 3vw, 30px); padding-top: clamp(18px, 3vw, 30px); border-top: 1px solid var(--line); }
+.kb-fields { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; }
+.kb-field { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-2); }
+.kb-field input { font: inherit; font-size: 22px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ink); background: transparent;
+  border: 0; border-bottom: 1.5px solid var(--ink); padding: 4px 2px; outline: none; border-radius: 0; }
+.kb-field input::placeholder { color: rgba(255,255,255,.45); }
+.kb-field input:focus { border-bottom-color: var(--cool); }
+.kb-field .mm { width: 3.2ch; text-align: center; }
+.kb-field .em { width: min(340px, 78vw); font-size: 18px; }
+.kb-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.kb-msg { margin: 0; min-height: 1.4em; font-size: 15px; font-weight: 600; }
+.kb-msg.err { color: #ffd3cf; }
+.kb-avail { margin: 0; font-size: 13px; color: var(--ink-2); }
+.kb-tablecard { container-type: inline-size; }
+.kb-table-wrap { overflow: auto; max-height: 560px; margin-top: 18px; border-top: 1px solid var(--line); -webkit-overflow-scrolling: touch; }
+.kb-table-wrap.free { max-height: none; }
+.kb-table { border-collapse: collapse; width: 100%; font-size: clamp(13px, 1.3vw, 16px); }
+.kb-table th { position: sticky; top: 0; background: #1a40e4; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: .03em;
+  color: var(--ink); padding: 14px 10px; border-bottom: 1px solid var(--line); vertical-align: bottom; line-height: 1.3; }
+.kb-table th small { display: block; font-weight: 500; text-transform: none; color: var(--ink-2); letter-spacing: 0; }
+.kb-table td { padding: 12px 10px; border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
+.kb-table td:not(:first-child), .kb-table th:not(:first-child) { text-align: right; }
+.kb-table tr.am td { background: rgba(255,255,255,.07); }
+.kb-table td.bad { color: #ffd3cf; font-weight: 700; }
+.kb-table td:first-child { font-variant-numeric: tabular-nums; }
+.kb-note { margin: 10px 0 0; font-size: 13px; color: var(--ink-2); }
+.kb-note i { display: inline-block; width: 10px; height: 10px; vertical-align: -1px; background: rgba(255,255,255,.18); margin-right: 4px; }
+.kb-table .short { display: none; }
+.kb-table td:first-child, .kb-table th:first-child { position: sticky; left: 0; z-index: 1; background: #1a40e4; }
+.kb-table th:first-child { z-index: 2; }
+.kb-table tr.am td:first-child { background: #2a4de6; }
+@container (max-width: 700px) {
+  .kb-table { font-size: 13px; }
+  .kb-table th { padding: 10px 7px; font-size: 11px; letter-spacing: 0; }
+  .kb-table td { padding: 8px 7px; }
+  .kb-table .full { display: none; }
+  .kb-table .short { display: inline; }
+  .kb-table-wrap.keep { max-height: 70vh; }
+  .kb-stats td:first-child { white-space: normal; min-width: 130px; }
+}
+.kb-report-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.kb-sub-h { margin: 28px 0 0; font-weight: 700; text-transform: uppercase; font-size: clamp(18px, 1.95vw, 26.7px); letter-spacing: -.015em; }
+[data-dash-source-state=refreshing] { opacity: .5; }
+@media (prefers-reduced-motion: no-preference) { .kb-pill, .kb-seg button { transition: background .2s, color .2s; } }
+</style>
+
+<div class="kb">
+  <div class="kb-bg" data-draw="bg" aria-hidden="true"></div>
+  <div class="kb-main">
+
+    <header class="kb-panel" id="prehled">
+      <div class="kb-top">
+        <p class="kb-kicker">Výrobna kebabů – monitoring chlazení.</p>
+        <a class="kb-pill" href="#tabulka" data-jump="tabulka">Naměřené hodnoty <i>↓</i></a>
+      </div>
+      <h1 class="kb-hero">Teploty mrazáků</h1>
+      <hr class="kb-rule">
+      <div class="kb-meta">
+        <p>Poslední měření: <b data-draw="last" data-source="teploty" data-field="cas">—</b></p>
+        <p><span>Nové měření každou celou hodinu</span></p>
+      </div>
+    </header>
+
+    <div class="kb-spacer" aria-hidden="true"></div>
+
+    <section class="kb-panel" id="zarizeni">
+      <div class="kb-head-row">
+        <h2 class="kb-h2">Zařízení</h2>
+        <div class="kb-seg" role="group" aria-label="Období grafů">
+          <button type="button" data-range="24" class="on" aria-pressed="true">24 h</button>
+          <button type="button" data-range="72" aria-pressed="false">3 dny</button>
+          <button type="button" data-range="168" aria-pressed="false">7 dní</button>
+        </div>
+      </div>
+      <div class="kb-devs">
+        <article class="kb-dev" id="hlavni" data-kind="F">
+          <div class="kb-dev-name"><span class="kb-tag"><i></i>Mrazák</span><h3>Hlavní mrazák</h3><p>maso</p></div>
+          <div class="kb-dev-val"><span class="kb-num"><span data-draw="now" data-col="hlavni" data-source="teploty" data-field="hlavni">—</span><small>°C</small></span><span class="kb-badge" data-draw="badge" data-col="hlavni">—</span></div>
+          <div class="kb-chart" data-draw="chart" data-col="hlavni" data-source="teploty"></div>
+        </article>
+        <article class="kb-dev" id="chladici" data-kind="C">
+          <div class="kb-dev-name"><span class="kb-tag"><i></i>Chladící box</span><h3>Chladící box</h3><p>omáčky, dresingy</p></div>
+          <div class="kb-dev-val"><span class="kb-num"><span data-draw="now" data-col="chladici" data-source="teploty" data-field="chladici">—</span><small>°C</small></span><span class="kb-badge" data-draw="badge" data-col="chladici">—</span></div>
+          <div class="kb-chart" data-draw="chart" data-col="chladici" data-source="teploty"></div>
+        </article>
+        <article class="kb-dev" id="rolls" data-kind="F">
+          <div class="kb-dev-name"><span class="kb-tag"><i></i>Mrazák</span><h3>Rolls Royce mrazák</h3><p>transport maso</p></div>
+          <div class="kb-dev-val"><span class="kb-num"><span data-draw="now" data-col="rolls" data-source="teploty" data-field="rolls">—</span><small>°C</small></span><span class="kb-badge" data-draw="badge" data-col="rolls">—</span></div>
+          <div class="kb-chart" data-draw="chart" data-col="rolls" data-source="teploty"></div>
+        </article>
+        <article class="kb-dev" id="transporter" data-kind="F">
+          <div class="kb-dev-name"><span class="kb-tag"><i></i>Mrazák</span><h3>Transporter mrazák</h3><p>transport maso</p></div>
+          <div class="kb-dev-val"><span class="kb-num"><span data-draw="now" data-col="transporter" data-source="teploty" data-field="transporter">—</span><small>°C</small></span><span class="kb-badge" data-draw="badge" data-col="transporter">—</span></div>
+          <div class="kb-chart" data-draw="chart" data-col="transporter" data-source="teploty"></div>
+        </article>
+        <article class="kb-dev" id="rolex" data-kind="F">
+          <div class="kb-dev-name"><span class="kb-tag"><i></i>Mrazák</span><h3>Mrazák ROLEX</h3><p>Filip kancelář – maso na doma</p></div>
+          <div class="kb-dev-val"><span class="kb-num"><span data-draw="now" data-col="rolex" data-source="teploty" data-field="rolex">—</span><small>°C</small></span><span class="kb-badge" data-draw="badge" data-col="rolex">—</span></div>
+          <div class="kb-chart" data-draw="chart" data-col="rolex" data-source="teploty"></div>
+        </article>
+        <article class="kb-dev" id="matteo" data-kind="C">
+          <div class="kb-dev-name"><span class="kb-tag"><i></i>Chladící box</span><h3>Chladící box Matteo</h3><p>omáčky pro champa</p></div>
+          <div class="kb-dev-val"><span class="kb-num"><span data-draw="now" data-col="matteo" data-source="teploty" data-field="matteo">—</span><small>°C</small></span><span class="kb-badge" data-draw="badge" data-col="matteo">—</span></div>
+          <div class="kb-chart" data-draw="chart" data-col="matteo" data-source="teploty"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="kb-panel" id="export">
+      <h2 class="kb-h2">Export dat</h2>
+      <p class="kb-lead">Zadej měsíc dvěma číslicemi (např. 10). Soubor obsahuje jen čistá data z tabulky naměřených hodnot.</p>
+      <div class="kb-export">
+        <div class="kb-fields">
+          <label class="kb-field">Měsíc (MM)<input class="mm" id="kb-month" type="text" inputmode="numeric" maxlength="2" placeholder="MM" autocomplete="off"></label>
+          <label class="kb-field">E-mail příjemce<input class="em" id="kb-email" type="email" placeholder="jmeno@firma.cz" autocomplete="email"></label>
+        </div>
+        <p class="kb-avail">Dostupné měsíce: <span data-draw="months" data-source="teploty" data-field="cas">—</span></p>
+        <div class="kb-actions">
+          <button type="button" class="kb-pill solid" data-act="download">Stáhnout .xlsx za měsíc <i>↓</i></button>
+          <button type="button" class="kb-pill" data-act="email">Poslat .xlsx na e-mail za měsíc <i>→</i></button>
+          <button type="button" class="kb-pill" data-act="online">Otevřít v Google Sheets za měsíc <i>↗</i></button>
+        </div>
+        <p class="kb-msg" role="status" aria-live="polite" data-draw="msg"></p>
+      </div>
+    </section>
+
+    <section class="kb-panel kb-tablecard" id="tabulka">
+      <h2 class="kb-h2 caps">Naměřené hodnoty</h2>
+      <p class="kb-lead">Všechna měření od začátku záznamu, nejnovější nahoře. Hodnoty v °C.</p>
+      <p class="kb-note"><i></i>všední den 6–12 h</p>
+      <div class="kb-table-wrap keep">
+        <table class="kb-table" data-source="teploty" data-row-key="cas">
+          <thead><tr>
+            <th data-field="cas" data-short="Čas"><span class="full">Čas</span><span class="short">Čas</span></th>
+            <th data-field="hlavni" data-short="Hlavní"><span class="full">Hlavní mrazák<small>maso</small></span><span class="short">Hlavní</span></th>
+            <th data-field="chladici" data-short="Chlad. box"><span class="full">Chladící box<small>omáčky, dresingy</small></span><span class="short">Chlad. box</span></th>
+            <th data-field="rolls" data-short="Rolls R."><span class="full">Rolls Royce mrazák<small>transport maso</small></span><span class="short">Rolls R.</span></th>
+            <th data-field="transporter" data-short="Transp."><span class="full">Transporter mrazák<small>transport maso</small></span><span class="short">Transp.</span></th>
+            <th data-field="rolex" data-short="ROLEX"><span class="full">Mrazák ROLEX<small>Filip kancelář</small></span><span class="short">ROLEX</span></th>
+            <th data-field="matteo" data-short="Matteo"><span class="full">Chladící box Matteo<small>omáčky pro champa</small></span><span class="short">Matteo</span></th>
+          </tr></thead>
+          <tbody data-draw="rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+
+
+</div>
+<script>
+window.KB_SHEET = { id: '1aChpyyPSEmU4DsCiS7hPqgBuqja7_NJYVTaEMV6ck_g', tabs: ['2026-10','2026-11','2026-12','2027-01','2027-02','2027-03','2027-04','2027-05','2027-06','2027-07','2027-08','2027-09','2027-10','2027-11','2027-12'] };
+window.dash = (function () {
+  var store = { teploty: { status: 'loading', data: [] } }, draws = {}, made = new Map();
+  function run(n) {
+    var f = draws[n]; if (!f) return;
+    document.querySelectorAll('[data-draw="' + n + '"]').forEach(function (el) {
+      if (el.closest('[hidden]')) return;
+      try {
+        if (typeof f === 'function') f(el);
+        else { if (!made.has(el)) made.set(el, f.mount(el)); if (f.update) f.update(el, made.get(el)); }
+      } catch (e) { console.error(n, e); }
+    });
+  }
+  function runAll() { Object.keys(draws).forEach(run); }
+  function load() {
+    return fetch('data/teploty.csv?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(function (t) { store.teploty = { status: 'ok', data: d3.csvParse(t) }; })
+      .catch(function () { if (store.teploty.status !== 'ok') store.teploty = { status: 'error', data: [] }; })
+      .then(runAll);
+  }
+  var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { run('chart'); }, 150); });
+  return {
+    colors: ['#ffffff', '#8fe9ff'],
+    data: function (id) { return store[id] || { status: 'missing', data: [] }; },
+    draw: function (n, f) { if (!f) return run(n); draws[n] = f; },
+    onData: function () {},
+    start: function () { runAll(); load(); setInterval(load, 5 * 60 * 1000); }
+  };
+})();
+</script>
+<script>
+(function () {
+  var COLS = ['hlavni', 'chladici', 'rolls', 'transporter', 'rolex', 'matteo'];
+  var KIND = { hlavni: 'F', chladici: 'C', rolls: 'F', transporter: 'F', rolex: 'F', matteo: 'C' };
+  var NAMES = { hlavni: 'Hlavní mrazák – maso', chladici: 'Chladící box – omáčky, dresingy', rolls: 'Rolls Royce mrazák – transport maso',
+    transporter: 'Transporter mrazák – transport maso', rolex: 'Mrazák ROLEX – Filip kancelář maso na doma', matteo: 'Chladící box Matteo – omáčky pro champa' };
+  var MONTHS = ['leden', 'únor', 'březen', 'duben', 'květen', 'červen', 'červenec', 'srpen', 'září', 'říjen', 'listopad', 'prosinec'];
+  var loc = d3.formatLocale({ decimal: ',', thousands: ' ', grouping: [3], currency: ['', ' Kč'], minus: '−' });
+  var f1 = loc.format('.1f');
+  var DAYS = ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'];
+  function parse(s) { var m = /^(\d{4})-(\d\d)-(\d\d) (\d\d):(\d\d)/.exec(s || ''); return m ? new Date(Date.UTC(+m[1], m[2] - 1, +m[3], +m[4], +m[5])) : null; }
+  function isAM(d) { var w = d.getUTCDay(); return w >= 1 && w <= 5 && d.getUTCHours() >= 6 && d.getUTCHours() < 12; }
+  function range(d, k) { var am = isAM(d); return k === 'F' ? (am ? [-18, -14] : [-19.8, -18]) : [0, 4]; }
+  function label(d) { return DAYS[d.getUTCDay()] + ' ' + d.getUTCDate() + '. ' + (d.getUTCMonth() + 1) + '. ' + d3.utcFormat('%H:%M')(d); }
+  function rows() {
+    var g = dash.data('teploty');
+    if (g.status !== 'ok') return { status: g.status, data: [] };
+    var out = [];
+    g.data.forEach(function (r, i) { var d = parse(r.cas); if (!d) return; var o = { i: i, cas: r.cas, d: d }; COLS.forEach(function (c) { o[c] = r[c] == null || r[c] === '' ? null : +r[c]; }); out.push(o); });
+    return { status: 'ok', data: out };
+  }
+  function monthKey(s) { return String(s).slice(0, 7); }
+  window.kb = { COLS: COLS, KIND: KIND, NAMES: NAMES, MONTHS: MONTHS, f1: f1, parse: parse, isAM: isAM, range: range, label: label, rows: rows, monthKey: monthKey, hours: 24, report: null };
+})();
+
+
+</script>
+
+<script>
+window.kbXlsx = function (header, body) {
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function col(i) { return String.fromCharCode(65 + i); }
+  var x = ['<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'];
+  [header].concat(body).forEach(function (row, ri) {
+    x.push('<row r="' + (ri + 1) + '">');
+    row.forEach(function (v, ci) {
+      var ref = col(ci) + (ri + 1);
+      if (typeof v === 'number' && isFinite(v)) x.push('<c r="' + ref + '"><v>' + v + '</v></c>');
+      else if (v != null && v !== '') x.push('<c r="' + ref + '" t="inlineStr"><is><t>' + esc(v) + '</t></is></c>');
+    });
+    x.push('</row>');
+  });
+  x.push('</sheetData></worksheet>');
+  var files = [
+    ['[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>'],
+    ['_rels/.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+    ['xl/workbook.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Teploty" sheetId="1" r:id="rId1"/></sheets></workbook>'],
+    ['xl/_rels/workbook.xml.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>'],
+    ['xl/worksheets/sheet1.xml', x.join('')]
+  ];
+  var enc = new TextEncoder(), table = [];
+  for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; table[n] = c >>> 0; }
+  function crc(b) { var c = 0xFFFFFFFF; for (var i = 0; i < b.length; i++) c = table[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function u16(v) { return [v & 255, (v >>> 8) & 255]; }
+  function u32(v) { return [v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255]; }
+  var parts = [], central = [], off = 0;
+  files.forEach(function (f) {
+    var name = enc.encode(f[0]), data = enc.encode(f[1]), c = crc(data);
+    var head = new Uint8Array([].concat(u32(0x04034b50), u16(20), u16(0x0800), u16(0), u16(0), u16(0x21), u32(c), u32(data.length), u32(data.length), u16(name.length), u16(0)));
+    parts.push(head, name, data);
+    central.push(new Uint8Array([].concat(u32(0x02014b50), u16(20), u16(20), u16(0x0800), u16(0), u16(0), u16(0x21), u32(c), u32(data.length), u32(data.length), u16(name.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(off))), name);
+    off += head.length + name.length + data.length;
+  });
+  var cdSize = central.reduce(function (s, a) { return s + a.length; }, 0);
+  var end = new Uint8Array([].concat(u32(0x06054b50), u16(0), u16(0), u16(files.length), u16(files.length), u32(cdSize), u32(off), u16(0)));
+  var all = parts.concat(central, [end]), len = all.reduce(function (s, a) { return s + a.length; }, 0), out = new Uint8Array(len), p = 0;
+  all.forEach(function (a) { out.set(a, p); p += a.length; });
+  return out;
+};
+</script>
+
+<script>
+document.querySelectorAll('.kb-seg button').forEach(function (b) {
+  b.addEventListener('click', function () {
+    window.kb.hours = +b.getAttribute('data-range');
+    document.querySelectorAll('.kb-seg button').forEach(function (x) { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+    dash.draw('chart');
+  });
+});
+document.querySelectorAll('[data-jump]').forEach(function (a) {
+  a.addEventListener('click', function (e) { var t = document.getElementById(a.getAttribute('data-jump')); if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
+});
+</script>
+
+<script>
+dash.draw('last', function (el) {
+  var R = kb.rows();
+  if (R.status !== 'ok' || !R.data.length) { el.textContent = '—'; return; }
+  var last = R.data[R.data.length - 1];
+  el.setAttribute('data-row', String(last.i));
+  el.textContent = kb.label(last.d);
+});
+
+dash.draw('now', function (el) {
+  var c = el.getAttribute('data-col'), R = kb.rows();
+  if (R.status !== 'ok' || !R.data.length) { el.textContent = '—'; return; }
+  var last = R.data[R.data.length - 1];
+  el.setAttribute('data-row', String(last.i));
+  el.textContent = last[c] == null ? '—' : kb.f1(last[c]);
+});
+
+dash.draw('badge', function (el) {
+  var c = el.getAttribute('data-col'), R = kb.rows();
+  el.className = 'kb-badge';
+  if (R.status !== 'ok' || !R.data.length) { el.textContent = '—'; return; }
+  var last = R.data[R.data.length - 1], v = last[c], r = kb.range(last.d, kb.KIND[c]);
+  var ok = v != null && v >= r[0] && v <= r[1];
+  if (!ok) el.classList.add('bad');
+  el.textContent = ok ? 'V normě' : 'Mimo rozsah';
+});
+
+dash.draw('months', function (el) {
+  var R = kb.rows();
+  if (R.status !== 'ok' || !R.data.length) { el.textContent = '—'; return; }
+  var seen = [];
+  R.data.forEach(function (r) { var k = kb.monthKey(r.cas); if (seen.indexOf(k) < 0) seen.push(k); });
+  el.textContent = seen.map(function (k) { return k.slice(5, 7) + '/' + k.slice(0, 4); }).join(', ');
+});
+
+dash.draw('chart', function (el) {
+  var c = el.getAttribute('data-col'), k = kb.KIND[c], R = kb.rows();
+  if (R.status !== 'ok') { el.textContent = R.status === 'error' ? 'Nepodařilo se načíst' : '—'; return; }
+  var all = R.data.filter(function (r) { return r[c] != null; });
+  if (!all.length) { el.textContent = '—'; return; }
+  var end = all[all.length - 1].d, start = new Date(end.getTime() - (kb.hours - 1) * 3600e3);
+  var data = all.filter(function (r) { return r.d >= start; });
+  el.replaceChildren();
+  var W = Math.max(220, el.clientWidth), H = 120, m = { t: 8, r: 10, b: 22, l: 40 };
+  var color = k === 'F' ? '#ffffff' : '#8fe9ff';
+  var x = d3.scaleUtc().domain([data[0].d, end]).range([m.l, W - m.r]);
+  if (data.length === 1) x.domain([new Date(end - 3600e3), end]);
+  var y = (k === 'F' ? d3.scaleLinear().domain([-20.5, -13.5]) : d3.scaleLinear().domain([-0.5, 4.5])).range([H - m.b, m.t]);
+  var svg = d3.select(el).append('svg').attr('width', W).attr('height', H).attr('role', 'img').attr('aria-label', 'Průběh teploty za posledních ' + kb.hours + ' hodin');
+  svg.append('g').attr('class', 'grid').attr('transform', 'translate(' + m.l + ',0)').call(d3.axisLeft(y).ticks(3).tickSize(-(W - m.l - m.r)).tickFormat(''));
+  var band = d3.area().curve(d3.curveStepAfter).x(function (r) { return x(r.d); })
+    .y0(function (r) { return y(kb.range(r.d, k)[0]); }).y1(function (r) { return y(kb.range(r.d, k)[1]); });
+  svg.append('path').datum(data).attr('d', band).style('fill', '#ffffff').style('opacity', .08);
+  var line = d3.line().x(function (r) { return x(r.d); }).y(function (r) { return y(r[c]); });
+  var p = svg.append('path').datum(data).attr('d', line).style('fill', 'none').style('stroke', color).style('stroke-width', 2).style('stroke-linejoin', 'round');
+  svg.append('circle').attr('cx', x(end)).attr('cy', y(data[data.length - 1][c])).attr('r', 4).style('fill', color);
+  svg.append('g').attr('transform', 'translate(0,' + (H - m.b) + ')')
+    .call(d3.axisBottom(x).ticks(W < 420 ? 3 : 5).tickSizeOuter(0).tickFormat(kb.hours <= 24 ? d3.utcFormat('%H:%M') : function (d) { return d.getUTCDate() + '. ' + (d.getUTCMonth() + 1) + '.'; }));
+  svg.append('g').attr('transform', 'translate(' + m.l + ',0)').call(d3.axisLeft(y).ticks(3).tickSize(0).tickPadding(6).tickFormat(kb.f1)).select('.domain').remove();
+  if (!el.__drawn && window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+    var L = p.node().getTotalLength();
+    p.style('stroke-dasharray', L + ' ' + L).style('stroke-dashoffset', L).transition().duration(1100).ease(d3.easeCubicOut).style('stroke-dashoffset', 0)
+      .on('end', function () { p.style('stroke-dasharray', null); });
+  }
+  el.__drawn = true;
+  var tip = d3.select(el).append('div').attr('class', 'kb-tip').style('display', 'none');
+  var dot = svg.append('circle').attr('r', 5).style('fill', 'none').style('stroke', color).style('stroke-width', 2).style('display', 'none');
+  var bis = d3.bisector(function (r) { return r.d; }).center;
+  svg.append('rect').attr('x', m.l).attr('y', 0).attr('width', W - m.l - m.r).attr('height', H).style('fill', 'transparent')
+    .on('pointermove', function (ev) {
+      var r = data[bis(data, x.invert(d3.pointer(ev)[0]))];
+      dot.style('display', null).attr('cx', x(r.d)).attr('cy', y(r[c]));
+      tip.style('display', null); tip.node().replaceChildren();
+      tip.append('strong').text(kb.f1(r[c]) + ' °C');
+      tip.append('span').text(kb.label(r.d));
+      var tw = tip.node().offsetWidth;
+      tip.style('left', Math.min(Math.max(0, x(r.d) - tw / 2), W - tw) + 'px').style('top', Math.max(-10, y(r[c]) - 56) + 'px');
+    })
+    .on('pointerleave', function () { tip.style('display', 'none'); dot.style('display', 'none'); });
+});
+
+window.kbFillRows = function (tb, list) {
+  tb.replaceChildren();
+  var ths = {}, table = tb.closest('table');
+  if (table) table.querySelectorAll('th[data-field]').forEach(function (th) { ths[th.getAttribute('data-field')] = th.getAttribute('data-short') || th.textContent; });
+  list.forEach(function (r) {
+    var tr = document.createElement('tr');
+    if (kb.isAM(r.d)) tr.className = 'am';
+    tr.setAttribute('data-key', r.cas);
+    var t = document.createElement('td'); t.textContent = kb.label(r.d); tr.appendChild(t);
+    kb.COLS.forEach(function (c) {
+      var td = document.createElement('td'), v = r[c], rg = kb.range(r.d, kb.KIND[c]);
+      td.textContent = v == null ? '—' : kb.f1(v);
+      td.setAttribute('data-label', ths[c] || c);
+      if (v != null && (v < rg[0] || v > rg[1])) td.className = 'bad';
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+};
+
+dash.draw('rows', function (tb) {
+  var R = kb.rows();
+  if (R.status !== 'ok' || !R.data.length) { tb.replaceChildren(); return; }
+  kbFillRows(tb, R.data.slice().reverse());
+});
+
+dash.draw('msg', {
+  mount: function (el) {
+    function say(t, err) { el.textContent = t; el.classList.toggle('err', !!err); }
+    function monthFromInput() {
+      var inp = document.getElementById('kb-month');
+      var v = inp ? inp.value.trim() : '';
+      if (!/^\d{2}$/.test(v) || +v < 1 || +v > 12) { say('Zadej měsíc dvěma číslicemi, 01 až 12.', true); return null; }
+      var R = kb.rows();
+      if (R.status !== 'ok') { say('Data se ještě načítají, zkus to za chvíli.', true); return null; }
+      var keys = [];
+      R.data.forEach(function (r) { var k = kb.monthKey(r.cas); if (k.slice(5, 7) === v && keys.indexOf(k) < 0) keys.push(k); });
+      if (!keys.length) { say('Pro měsíc ' + v + ' nejsou žádná data.', true); return null; }
+      var key = keys[keys.length - 1];
+      return { key: key, list: R.data.filter(function (r) { return kb.monthKey(r.cas) === key; }), name: kb.MONTHS[+v - 1] + ' ' + key.slice(0, 4) };
+    }
+    function build(sel) {
+      var header = ['Datum a čas'].concat(kb.COLS.map(function (c) { return kb.NAMES[c] + ' (°C)'; }));
+      var body = sel.list.map(function (r) { return [r.cas].concat(kb.COLS.map(function (c) { return r[c]; })); });
+      return window.kbXlsx(header, body);
+    }
+    function fname(sel) { return 'teploty-' + sel.key + '.xlsx'; }
+    var XT = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    async function save(sel, bytes) {
+      try {
+        var url = URL.createObjectURL(new Blob([bytes], { type: XT }));
+        var a = document.createElement('a'); a.href = url; a.download = fname(sel); a.click();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+        return 'saved';
+      } catch (e) { return 'fail'; }
+    }
+    async function onClick(ev) {
+      var btn = ev.currentTarget, act = btn.getAttribute('data-act');
+      var sel = monthFromInput(); if (!sel) return;
+      btn.disabled = true;
+      try {
+        if (act === 'download') {
+          var r = await save(sel, build(sel));
+          say(r === 'saved' ? 'Soubor ' + fname(sel) + ' (' + sel.list.length + ' měření) je připravený ke stažení.' : r === 'declined' ? 'Stahování bylo zrušeno.' : r === 'busy' ? 'Potvrď prosím otevřené okno stahování.' : 'Stažení se nepodařilo.', r !== 'saved');
+        } else if (act === 'email') {
+          var to = ((document.getElementById('kb-email') || {}).value || '').trim();
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) { say('Zadej platnou e-mailovou adresu příjemce.', true); return; }
+          var subj = 'Teploty mrazáků – ' + sel.name;
+          var r2 = await save(sel, build(sel));
+          var a = document.createElement('a');
+          a.href = 'mailto:' + to + '?subject=' + encodeURIComponent(subj) + '&body=' + encodeURIComponent('Dobrý den,\n\nv příloze posílám data teplot za ' + sel.name + ' (soubor ' + fname(sel) + ').');
+          a.click();
+          say(r2 === 'saved' ? 'Soubor ' + fname(sel) + ' se stáhl a otevřel se nový e-mail pro ' + to + ' – přilož soubor a odešli.' : 'Otevřel se nový e-mail pro ' + to + '; soubor se nestáhl, zkus tlačítko Stáhnout.', r2 !== 'saved');
+        } else if (act === 'online') {
+          var tabs = window.KB_SHEET.tabs;
+          if (tabs.indexOf(sel.key) < 0) { say('Pro ' + sel.name + ' zatím není list v Google Sheets.', true); return; }
+          var url = 'https://docs.google.com/spreadsheets/d/' + window.KB_SHEET.id + '/edit#gid=' + sel.key.replace('-', '');
+          var link = document.createElement('a'); link.href = url; link.target = '_blank'; link.rel = 'noopener'; link.click();
+          say('Tabulka za ' + sel.name + ' se otevírá v Google Sheets. Stáhnout: Soubor → Stáhnout. Upravit: Soubor → Vytvořit kopii.');
+        }
+      } catch (e) {
+        var code = e && e.code;
+        say(code === 'server_not_connected' ? 'Gmail není připojený. Připoj ho v nastavení konektorů a zkus to znovu.' :
+            code === 'not_granted' || code === 'consent_denied' ? 'Přístup k Gmailu nebyl povolen.' : 'Akce se nepodařila' + (e && e.message ? ': ' + e.message : '.'), true);
+      } finally { btn.disabled = false; }
+    }
+    var btns = document.querySelectorAll('[data-act]');
+    btns.forEach(function (b) { b.addEventListener('click', onClick); });
+    var mm = document.getElementById('kb-month');
+    function clean() { var v = mm.value.replace(/\D/g, '').slice(0, 2); if (v !== mm.value) mm.value = v; }
+    if (mm) mm.addEventListener('input', clean);
+    return { btns: btns, onClick: onClick, mm: mm, clean: clean };
+  },
+  update: function () {},
+  unmount: function (el, h) { if (!h) return; h.btns.forEach(function (b) { b.removeEventListener('click', h.onClick); }); if (h.mm) h.mm.removeEventListener('input', h.clean); }
+});
+</script>
+
+<script>
+dash.draw('bg', {
+  mount: function (el) {
+    var cv = document.createElement('canvas');
+    el.appendChild(cv);
+    var gl = cv.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'high-performance' });
+    if (!gl) return { stop: function () {} };
+    var VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+    var FS = [
+      'precision highp float;',
+      'uniform vec2 uRes;uniform float uTime;uniform float uRot;uniform sampler2D uTex;uniform sampler2D uProf;uniform float uHasTex;',
+      'const float YT=1.5;const float YB=-1.75;const float FY=-2.42;',
+      'float hash(vec3 p){p=fract(p*0.3183099+.1);p*=17.0;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}',
+      'float noise(vec3 x){vec3 i=floor(x);vec3 f=fract(x);f=f*f*(3.0-2.0*f);',
+      ' return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),',
+      '  mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);}',
+      'float fbm(vec3 p){float a=.5,s=0.;for(int i=0;i<5;i++){s+=a*noise(p);p=p*2.03+vec3(1.7,9.2,3.1);a*=.5;}return s;}',
+      'mat2 rot(float a){float c=cos(a),s=sin(a);return mat2(c,-s,s,c);}',
+      'float sdBox(vec3 p,vec3 b,float r){vec3 q=abs(p)-b+r;return length(max(q,0.))+min(max(q.x,max(q.y,q.z)),0.)-r;}',
+      'float sdCylY(vec3 p,float r,float y0,float y1){vec2 d=vec2(length(p.xz)-r,abs(p.y-(y0+y1)*.5)-(y1-y0)*.5);return min(max(d.x,d.y),0.)+length(max(d,0.));}',
+      'float sdCylZ(vec3 p,float r,float h){vec2 d=vec2(length(p.xy)-r,abs(p.z)-h);return min(max(d.x,d.y),0.)+length(max(d,0.));}',
+      'vec2 kuv(vec3 q){return vec2(fract(atan(q.x,q.z)/6.2831853+.5),clamp((YT-q.y)/(YT-YB),0.,1.));}',
+      'float prof(float v){return texture2D(uProf,vec2(v,.5)).r*1.2;}',
+      'vec3 texc(vec2 uv){return uHasTex>.5?texture2D(uTex,uv).rgb:vec3(.62,.38,.2);}',
+      'float meat(vec3 p){vec3 q=p;q.xz=rot(uRot)*q.xz;vec2 uv=kuv(q);',
+      ' float lum=dot(texc(uv),vec3(.3,.59,.11));',
+      ' float d=(length(q.xz)-prof(uv.y)*1.02-(lum-.5)*.07)*.8;',
+      ' return max(d,max(q.y-YT,YB-q.y));}',
+      'vec2 map(vec3 p){',
+      ' float bd=max(length(p.xz)-1.05,max(p.y-YT-.1,YB-.1-p.y));',
+      ' vec2 res=vec2(bd>.08?bd:meat(p),1.);',
+      ' float sk=sdCylY(p,.035,-2.0,2.2);',
+      ' float plate=sdCylY(p,.34,1.555,1.6);',
+      ' float tray=min(sdCylY(p,.98,-2.02,-1.97),length(vec2(length(p.xz)-.98,p.y+1.955))-.022);',
+      ' float base=sdBox(p-vec3(0.,-2.22,-.25),vec3(1.3,.2,1.2),.045);',
+      ' float tower=sdBox(p-vec3(0.,.1,-1.25),vec3(1.15,2.3,.22),.06);',
+      ' tower=max(tower,-sdBox(p-vec3(0.,.15,-1.03),vec3(.98,1.86,.06),.012));',
+      ' vec3 wp=p;wp.x=abs(wp.x);wp-=vec3(1.38,.1,-.72);wp.xz=rot(.95)*wp.xz;',
+      ' float wing=sdBox(wp,vec3(.39,2.28,.016),.008);',
+      ' float arm=sdBox(p-vec3(0.,2.32,-.6),vec3(.07,.055,.62),.02);',
+      ' float hold=sdCylY(p,.07,2.1,2.4);',
+      ' float steel=min(min(min(sk,plate),min(tray,base)),min(min(tower,wing),min(arm,hold)));',
+      ' if(steel<res.x)res=vec2(steel,2.);',
+      ' float cer=sdBox(p-vec3(0.,.15,-1.075),vec3(.96,1.84,.02),.004);',
+      ' if(cer<res.x)res=vec2(cer,3.);',
+      ' vec3 kp=p-vec3(0.,-2.24,.97);kp.x=abs(kp.x)-.9;kp.x=abs(kp.x)-.16;',
+      ' float knob=sdCylZ(kp,.06,.045)-.008;',
+      ' if(knob<res.x)res=vec2(knob,4.);',
+      ' return res;}',
+      'vec3 calcN(vec3 p){vec2 e=vec2(.002,-.002);return normalize(e.xyy*map(p+e.xyy).x+e.yyx*map(p+e.yyx).x+e.yxy*map(p+e.yxy).x+e.xxx*map(p+e.xxx).x);}',
+      'vec3 env(vec3 d){',
+      ' vec3 c=mix(vec3(.42,.47,.5),vec3(.9,.94,.96),smoothstep(-.1,.6,d.y));',
+      ' c=mix(c,vec3(.78,.8,.8),smoothstep(-.05,-.5,d.y)*.8);c*=.75+.25*smoothstep(-.3,.3,d.x+d.z);',
+      ' c+=vec3(2.6)*smoothstep(.86,.93,dot(d,normalize(vec3(-.45,.75,.55))));',
+      ' c+=vec3(1.3)*smoothstep(.07,.0,abs(d.x-.82))*smoothstep(-.35,0.,d.y)*smoothstep(.9,.35,d.y);',
+      ' c+=vec3(.9)*smoothstep(.06,.0,abs(d.x+.9))*smoothstep(-.2,0.,d.y)*smoothstep(.8,.3,d.y);',
+      ' c=mix(c,vec3(.45,.8,.86),.18*exp(-d.y*d.y*7.));',
+      ' return c;}',
+      'float shadow(vec3 ro,vec3 rd){float res=1.,t=.03;for(int i=0;i<28;i++){float h=map(ro+rd*t).x;res=min(res,9.*h/t);t+=clamp(h,.03,.3);if(res<.01||t>6.)break;}return clamp(res,0.,1.);}',
+      'bool box(vec3 ro,vec3 rd,vec3 mn,vec3 mx,out float t0,out float t1){vec3 ir=1./rd;vec3 a=(mn-ro)*ir,b=(mx-ro)*ir;vec3 lo=min(a,b),hi=max(a,b);t0=max(max(lo.x,lo.y),lo.z);t1=min(min(hi.x,hi.y),hi.z);return t1>max(t0,0.);}',
+      'vec3 disp(vec3 c){return pow(clamp(c/(1.+c*.12)*1.06,0.,1.),vec3(1./2.2));}',
+      'void main(){',
+      ' vec2 fc=gl_FragCoord.xy;vec2 uv=(fc-.5*uRes)/uRes.y;vec2 sc=fc/uRes;float aspect=uRes.x/uRes.y;float T=uTime;',
+      ' float zoom=mix(1.45,1.0,smoothstep(.6,1.4,aspect));',
+      ' vec3 ro=vec3(1.45,.5,5.9)*zoom;ro.y=.45;vec3 ta=vec3(0.,-.42,-.3);',
+      ' vec3 ww=normalize(ta-ro);vec3 uu=normalize(cross(ww,vec3(0,1,0)));vec3 vv=cross(uu,ww);',
+      ' vec3 rd=normalize(uv.x*uu+uv.y*vv+.95*ww);',
+      ' vec3 kl=normalize(vec3(-.5,.85,.6));',
+      ' vec3 bg=mix(vec3(1.),vec3(.95,.985,.99),smoothstep(.2,1.,sc.y));',
+      ' vec3 col=bg;bool obj=false;',
+      ' float tf=rd.y<0.?(FY-ro.y)/rd.y:1e9;',
+      ' float t0,t1;vec2 h=vec2(0.);float t=0.;',
+      ' if(box(ro,rd,vec3(-1.8,-2.45,-1.6),vec3(1.8,2.6,1.1),t0,t1)){',
+      '  t=max(t0,0.);',
+      '  for(int i=0;i<130;i++){vec3 p=ro+rd*t;h=map(p);if(h.x<.001){obj=true;break;}t+=h.x;if(t>t1)break;}',
+      ' }',
+      ' if(obj&&t<tf){',
+      '  vec3 p=ro+rd*t;vec3 n=calcN(p);',
+      '  float sh=shadow(p+n*.01,kl);',
+      '  float ao=clamp(map(p+n*.12).x/.12,0.,1.)*.5+.5;',
+      '  float ndv=max(dot(n,-rd),0.);float fr=.04+.96*pow(1.-ndv,5.);',
+      '  vec3 r=reflect(rd,n);',
+      '  vec3 c;',
+      '  if(h.y<1.5){',
+      '   vec3 q=p;q.xz=rot(uRot)*q.xz;',
+      '   vec3 alb=pow(texc(kuv(q)),vec3(2.2));',
+      '   float lum=dot(alb,vec3(.3,.59,.11));',
+      '   float wrap=pow(clamp(dot(n,kl)*.5+.5,0.,1.),1.6);',
+      '   c=alb*(env(n)*.42*ao+vec3(1.,.97,.93)*wrap*(.35+.65*sh)*1.1);',
+      '   c+=vec3(1.)*pow(max(dot(r,kl),0.),24.)*(.12+.45*lum)*sh;',
+      '   c+=vec3(.45,.85,.9)*pow(1.-ndv,3.)*.18;',
+      '  }else if(h.y<2.5){',
+      '   float brush=.93+.07*noise(p*vec3(140.,3.,140.))+.03*noise(p*vec3(400.,1.,400.));',
+      '   vec3 e=mix(env(r),env(normalize(r+n*.6)),.45);',
+      '   c=vec3(.62,.64,.66)*e*brush*(.6+.4*sh)*ao;',
+      '   c+=vec3(1.)*pow(max(dot(r,kl),0.),90.)*1.6*sh;',
+      '   c=mix(c,env(r)*.9,fr*.35);',
+      '  }else if(h.y<3.5){',
+      '   vec2 g=vec2(p.x,p.y)*vec2(15.,15.);g.x+=.5*mod(floor(g.y),2.);',
+      '   vec2 f=fract(g)-.5;float hole=smoothstep(.2,.32,length(f*vec2(1.,1.15)));',
+      '   float tile=step(.03,abs(fract((p.x+.96)/.64)-.5)*2.-.94)*0.;',
+      '   vec3 alb=vec3(.80,.74,.64)*(.35+.65*hole)*(.94+.06*noise(p*30.));',
+      '   float seam=smoothstep(.008,.0,abs(fract((p.x+.96)/.64)-0.))+smoothstep(.008,.0,abs(fract((p.y+1.69)/.61)-0.));',
+      '   alb*=1.-.6*clamp(seam,0.,1.);',
+      '   c=alb*(env(n)*.45+vec3(1.)*max(dot(n,kl),0.)*sh*.7)*ao;',
+      '  }else{',
+      '   c=vec3(.025)*(env(n)*.6)+env(r)*fr*.9+vec3(1.)*pow(max(dot(r,kl),0.),60.)*.6*sh;',
+      '  }',
+      '  col=disp(c);',
+      ' }else if(tf<1e8){',
+      '  vec3 p=ro+rd*tf;',
+      '  float d=length(p.xz-vec2(0.,-.3));',
+      '  float sh=1.;float ao=1.;',
+      '  if(d<5.){sh=shadow(p+vec3(0.,.01,0.),kl);ao=clamp(map(p+vec3(0.,.35,0.)).x/.35,0.,1.)*.6+.4;ao=mix(ao,1.,smoothstep(1.5,4.,d));}',
+      '  vec3 fc2=vec3(.97,.985,.99)*(.62+.38*sh)*ao;',
+      '  col=disp(fc2*1.02);',
+      '  col=mix(col,bg,smoothstep(7.,16.,tf));',
+      ' }',
+      ' float back=fbm(vec3(uv.x*1.5+T*.035,uv.y*2.1-T*.012,T*.04));',
+      ' float dB=smoothstep(.42,.9,back*.95+smoothstep(.8,.0,sc.y)*.45)*(obj?.1:.75);',
+      ' vec3 fogA=mix(vec3(.45,.86,.9),vec3(.74,.95,.97),back);',
+      ' col=mix(col,fogA,dB);',
+      ' float fr2=fbm(vec3(uv.x*2.3-T*.06,uv.y*3.2+T*.02,T*.07+7.));',
+      ' float dF=smoothstep(.5,.95,fr2*.85+smoothstep(.3,.0,sc.y)*.55)*.5;',
+      ' col=mix(col,mix(vec3(.55,.9,.93),vec3(.86,.98,.99),fr2),dF);',
+      ' float sp=0.;',
+      ' for(int i=0;i<3;i++){float fi=float(i);vec2 pp=uv*(9.+fi*7.);pp.y+=T*(.08+.05*fi);pp.x+=sin(pp.y*.5+fi*3.+T*.3)*.4;',
+      '  vec2 id=floor(pp);vec2 f=fract(pp)-.5;float hh=hash(vec3(id,fi));',
+      '  if(hh>.9){vec2 o=vec2(hash(vec3(id,fi+3.))-.5,hash(vec3(id,fi+7.))-.5)*.6;sp+=smoothstep(.06,.0,length(f-o))*(.5+.5*sin(T*2.+hh*40.));}}',
+      ' col=mix(col,vec3(.2,.72,.8),clamp(sp,0.,1.)*.55);',
+      ' gl_FragColor=vec4(col,1.);}'
+    ].join('\n');
+    function sh(type, src) { var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { console.warn(gl.getShaderInfoLog(s)); return null; } return s; }
+    var vs = sh(gl.VERTEX_SHADER, VS), fs = sh(gl.FRAGMENT_SHADER, FS);
+    if (!vs || !fs) return { stop: function () {} };
+    var pr = gl.createProgram(); gl.attachShader(pr, vs); gl.attachShader(pr, fs); gl.linkProgram(pr);
+    if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return { stop: function () {} };
+    gl.useProgram(pr);
+    var buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    var loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    function mkTex(unit) { var t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); return t; }
+    var U = function (n) { return gl.getUniformLocation(pr, n); };
+    var uRes = U('uRes'), uTime = U('uTime'), uRot = U('uRot'), uHas = U('uHasTex');
+    gl.uniform1i(U('uTex'), 0); gl.uniform1i(U('uProf'), 1); gl.uniform1f(uHas, 0);
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+    var tMeat = mkTex(0); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([158, 97, 51]));
+    var tProf = mkTex(1);
+    function setProf(arr) {
+      var a = new Uint8Array(64); for (var i = 0; i < 64; i++) a[i] = Math.round(Math.min(1, (arr[i] || .8) / 1.2) * 255);
+      gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, tProf);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, 64, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, a);
+    }
+    setProf([]);
+    var motion = window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
+    var tries = 0, alive = true;
+    (function waitTex() {
+      if (!alive) return;
+      if (window.KEBAB_TEX) {
+        if (window.KEBAB_PROF) setProf(window.KEBAB_PROF);
+        var img = new Image();
+        img.onload = function () { if (!alive) return; gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tMeat);
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img); gl.uniform1f(uHas, 1); if (!motion) still(); };
+        img.src = window.KEBAB_TEX;
+      } else if (tries++ < 150) setTimeout(waitTex, 100);
+    })();
+    var wrap = el.parentElement, raf = 0, rot = 0, t0 = performance.now(), scale = Math.min(1.5, window.devicePixelRatio || 1), slow = 0, lastT = 0;
+    function size() {
+      var w = el.clientWidth, h = el.clientHeight, s = Math.min(scale, 2200 / Math.max(w, 1));
+      var W = Math.max(2, Math.round(w * s)), H = Math.max(2, Math.round(h * s));
+      if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; gl.viewport(0, 0, W, H); }
+    }
+    function scrollY() { var r = wrap.getBoundingClientRect(); return Math.max(0, -r.top); }
+    function frame(now) {
+      raf = requestAnimationFrame(frame);
+      if (document.hidden) return;
+      size();
+      var t = (now - t0) / 1000, dt = Math.min(0.1, t - lastT); lastT = t;
+      var target = scrollY() * 0.004 + t * 0.12;
+      rot += (target - rot) * Math.min(1, dt * 5);
+      gl.uniform2f(uRes, cv.width, cv.height); gl.uniform1f(uTime, t); gl.uniform1f(uRot, rot);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      if (dt > 0.04) { slow++; if (slow > 30 && scale > 0.7) { scale -= 0.1; slow = 0; } } else slow = Math.max(0, slow - 1);
+    }
+    function still() { size(); gl.uniform2f(uRes, cv.width, cv.height); gl.uniform1f(uTime, 2.0); gl.uniform1f(uRot, 0.6); gl.drawArrays(gl.TRIANGLES, 0, 3); }
+    if (motion) raf = requestAnimationFrame(frame); else { still(); window.addEventListener('resize', still); }
+    return { stop: function () { alive = false; cancelAnimationFrame(raf); window.removeEventListener('resize', still); } };
+  },
+  update: function () {},
+  unmount: function (el, made) { if (made && made.stop) made.stop(); }
+});
+</script>
+
+<script>dash.start();</script>
+</body>
+</html>
