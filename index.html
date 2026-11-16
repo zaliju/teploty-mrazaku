@@ -62,11 +62,13 @@ html, body { margin: 0; padding: 0; background: #ffffff; }
 .kb-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-2); }
 .kb-tag i { width: 9px; height: 9px; border-radius: 50%; background: var(--ink); }
 .kb-dev[data-kind="C"] .kb-tag i { background: var(--cool); }
+.kb-dev[data-kind="A"] .kb-tag i { background: #ffd36b; }
 .kb-dev-val { display: flex; flex-direction: column; gap: 8px; }
 .kb-num { font-weight: 300; font-size: clamp(40px, 4.6vw, 64px); line-height: .95; letter-spacing: -.05em; white-space: nowrap; }
 .kb-num small { font-size: .38em; font-weight: 500; letter-spacing: 0; margin-left: 4px; color: var(--ink-2); }
 .kb-badge { align-self: flex-start; font-size: 12px; font-weight: 700; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; background: var(--ink); color: var(--blue); }
 .kb-badge.bad { background: #ff4d3d; color: #fff; }
+.kb-badge.off { background: transparent; color: var(--ink); border: 1.5px solid var(--ink-2); }
 .kb-chart { position: relative; min-height: 120px; min-width: 0; }
 .kb-chart svg { display: block; overflow: visible; }
 .kb-chart .tick text { fill: var(--ink-2); font-size: 12px; font-family: inherit; }
@@ -89,6 +91,11 @@ html, body { margin: 0; padding: 0; background: #ffffff; }
 .kb-field input::placeholder { color: rgba(255,255,255,.45); }
 .kb-field input:focus { border-bottom-color: var(--cool); }
 .kb-field .mm { width: 3.2ch; text-align: center; }
+.kb-field select.dev { font: inherit; font-size: 20px; font-weight: 600; color: var(--ink); background: transparent; border: 0; border-bottom: 1.5px solid var(--ink); padding: 4px 22px 4px 2px; border-radius: 0; outline: none; text-transform: none; letter-spacing: 0; cursor: pointer; appearance: none; -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #fff 50%), linear-gradient(135deg, #fff 50%, transparent 50%); background-position: calc(100% - 10px) 55%, calc(100% - 5px) 55%; background-size: 5px 5px; background-repeat: no-repeat; }
+.kb-field select.dev option { color: #002be1; background: #fff; }
+.kb-tfilter { border-radius: 22px; }
+.kb-tfilter button { white-space: nowrap; }
 .kb-field .em { width: min(340px, 78vw); font-size: 18px; }
 .kb-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .kb-msg { margin: 0; min-height: 1.4em; font-size: 15px; font-weight: 600; }
@@ -156,44 +163,40 @@ html, body { margin: 0; padding: 0; background: #ffffff; }
         </div>
       </div>
       <div class="kb-devs">
-        <article class="kb-dev" id="hlavni" data-kind="F">
-          <div class="kb-dev-name"><span class="kb-tag"><i></i>Mrazák</span><h3>Hlavní mrazák</h3><p>maso</p></div>
-          <div class="kb-dev-val"><span class="kb-num"><span data-draw="now" data-col="hlavni" data-source="teploty" data-field="hlavni">—</span><small>°C</small></span><span class="kb-badge" data-draw="badge" data-col="hlavni">—</span></div>
-          <div class="kb-chart" data-draw="chart" data-col="hlavni" data-source="teploty"></div>
+        <article class="kb-dev" id="mrazak" data-kind="F">
+          <div class="kb-dev-name"><span class="kb-tag"><i></i>Mrazicí teploměr</span><h3>Mrazák</h3></div>
+          <div class="kb-dev-val"><span class="kb-num"><span data-draw="now" data-col="mrazak" data-source="teploty" data-field="mrazak">—</span><small>°C</small></span><span class="kb-badge" data-draw="badge" data-col="mrazak">—</span></div>
+          <div class="kb-chart" data-draw="chart" data-col="mrazak" data-source="teploty"></div>
         </article>
-        <article class="kb-dev" id="chladici" data-kind="C">
-          <div class="kb-dev-name"><span class="kb-tag"><i></i>Chladící box</span><h3>Chladící box</h3><p>omáčky, dresingy</p></div>
-          <div class="kb-dev-val"><span class="kb-num"><span data-draw="now" data-col="chladici" data-source="teploty" data-field="chladici">—</span><small>°C</small></span><span class="kb-badge" data-draw="badge" data-col="chladici">—</span></div>
-          <div class="kb-chart" data-draw="chart" data-col="chladici" data-source="teploty"></div>
+        <article class="kb-dev" id="auto1" data-kind="A">
+          <div class="kb-dev-name"><span class="kb-tag"><i></i>Auto · mražení po–pá 9–18 h</span><h3>Auto 1</h3></div>
+          <div class="kb-dev-val"><span class="kb-num"><span data-draw="now" data-col="auto1" data-source="teploty" data-field="auto1">—</span><small>°C</small></span><span class="kb-badge" data-draw="badge" data-col="auto1">—</span></div>
+          <div class="kb-chart" data-draw="chart" data-col="auto1" data-source="teploty"></div>
         </article>
-        <article class="kb-dev" id="rolls" data-kind="F">
-          <div class="kb-dev-name"><span class="kb-tag"><i></i>Mrazák</span><h3>Rolls Royce mrazák</h3><p>transport maso</p></div>
-          <div class="kb-dev-val"><span class="kb-num"><span data-draw="now" data-col="rolls" data-source="teploty" data-field="rolls">—</span><small>°C</small></span><span class="kb-badge" data-draw="badge" data-col="rolls">—</span></div>
-          <div class="kb-chart" data-draw="chart" data-col="rolls" data-source="teploty"></div>
+        <article class="kb-dev" id="auto2" data-kind="A">
+          <div class="kb-dev-name"><span class="kb-tag"><i></i>Auto · mražení po–pá 9–18 h</span><h3>Auto 2</h3></div>
+          <div class="kb-dev-val"><span class="kb-num"><span data-draw="now" data-col="auto2" data-source="teploty" data-field="auto2">—</span><small>°C</small></span><span class="kb-badge" data-draw="badge" data-col="auto2">—</span></div>
+          <div class="kb-chart" data-draw="chart" data-col="auto2" data-source="teploty"></div>
         </article>
-        <article class="kb-dev" id="transporter" data-kind="F">
-          <div class="kb-dev-name"><span class="kb-tag"><i></i>Mrazák</span><h3>Transporter mrazák</h3><p>transport maso</p></div>
-          <div class="kb-dev-val"><span class="kb-num"><span data-draw="now" data-col="transporter" data-source="teploty" data-field="transporter">—</span><small>°C</small></span><span class="kb-badge" data-draw="badge" data-col="transporter">—</span></div>
-          <div class="kb-chart" data-draw="chart" data-col="transporter" data-source="teploty"></div>
+        <article class="kb-dev" id="auto3" data-kind="A">
+          <div class="kb-dev-name"><span class="kb-tag"><i></i>Auto · mražení po–pá 9–18 h</span><h3>Auto 3</h3></div>
+          <div class="kb-dev-val"><span class="kb-num"><span data-draw="now" data-col="auto3" data-source="teploty" data-field="auto3">—</span><small>°C</small></span><span class="kb-badge" data-draw="badge" data-col="auto3">—</span></div>
+          <div class="kb-chart" data-draw="chart" data-col="auto3" data-source="teploty"></div>
         </article>
-        <article class="kb-dev" id="rolex" data-kind="F">
-          <div class="kb-dev-name"><span class="kb-tag"><i></i>Mrazák</span><h3>Mrazák ROLEX</h3><p>Filip kancelář – maso na doma</p></div>
-          <div class="kb-dev-val"><span class="kb-num"><span data-draw="now" data-col="rolex" data-source="teploty" data-field="rolex">—</span><small>°C</small></span><span class="kb-badge" data-draw="badge" data-col="rolex">—</span></div>
-          <div class="kb-chart" data-draw="chart" data-col="rolex" data-source="teploty"></div>
-        </article>
-        <article class="kb-dev" id="matteo" data-kind="C">
-          <div class="kb-dev-name"><span class="kb-tag"><i></i>Chladící box</span><h3>Chladící box Matteo</h3><p>omáčky pro champa</p></div>
-          <div class="kb-dev-val"><span class="kb-num"><span data-draw="now" data-col="matteo" data-source="teploty" data-field="matteo">—</span><small>°C</small></span><span class="kb-badge" data-draw="badge" data-col="matteo">—</span></div>
-          <div class="kb-chart" data-draw="chart" data-col="matteo" data-source="teploty"></div>
+        <article class="kb-dev" id="box" data-kind="C">
+          <div class="kb-dev-name"><span class="kb-tag"><i></i>Chladicí teploměr</span><h3>Chladící box</h3></div>
+          <div class="kb-dev-val"><span class="kb-num"><span data-draw="now" data-col="box" data-source="teploty" data-field="box">—</span><small>°C</small></span><span class="kb-badge" data-draw="badge" data-col="box">—</span></div>
+          <div class="kb-chart" data-draw="chart" data-col="box" data-source="teploty"></div>
         </article>
       </div>
     </section>
 
     <section class="kb-panel" id="export">
       <h2 class="kb-h2">Export dat</h2>
-      <p class="kb-lead">Zadej měsíc dvěma číslicemi (např. 10). Soubor obsahuje jen čistá data z tabulky naměřených hodnot.</p>
+      <p class="kb-lead">Vyber teploměr a zadej měsíc dvěma číslicemi (např. 10). Soubor obsahuje jen čistá data jednoho teploměru.</p>
       <div class="kb-export">
         <div class="kb-fields">
+          <label class="kb-field">Teploměr<select class="dev" id="kb-dev"><option value="mrazak">Mrazák</option><option value="auto1">Auto 1</option><option value="auto2">Auto 2</option><option value="auto3">Auto 3</option><option value="box">Chladící box</option></select></label>
           <label class="kb-field">Měsíc (MM)<input class="mm" id="kb-month" type="text" inputmode="numeric" maxlength="2" placeholder="MM" autocomplete="off"></label>
           <label class="kb-field">E-mail příjemce<input class="em" id="kb-email" type="email" placeholder="jmeno@firma.cz" autocomplete="email"></label>
         </div>
@@ -210,17 +213,23 @@ html, body { margin: 0; padding: 0; background: #ffffff; }
     <section class="kb-panel kb-tablecard" id="tabulka">
       <h2 class="kb-h2 caps">Naměřené hodnoty</h2>
       <p class="kb-lead">Všechna měření od začátku záznamu, nejnovější nahoře. Hodnoty v °C.</p>
-      <p class="kb-note"><i></i>všední den 6–12 h</p>
+      <div class="kb-seg kb-tfilter" role="group" aria-label="Teploměr v tabulce" style="margin-top:16px;flex-wrap:wrap">
+        <button type="button" data-tdev="" class="on" aria-pressed="true">Vše</button>
+        <button type="button" data-tdev="mrazak" aria-pressed="false">Mrazák</button>
+        <button type="button" data-tdev="auto1" aria-pressed="false">Auto 1</button>
+        <button type="button" data-tdev="auto2" aria-pressed="false">Auto 2</button>
+        <button type="button" data-tdev="auto3" aria-pressed="false">Auto 3</button>
+        <button type="button" data-tdev="box" aria-pressed="false">Chladící box</button>
+      </div>
       <div class="kb-table-wrap keep">
         <table class="kb-table" data-source="teploty" data-row-key="cas">
           <thead><tr>
             <th data-field="cas" data-short="Čas"><span class="full">Čas</span><span class="short">Čas</span></th>
-            <th data-field="hlavni" data-short="Hlavní"><span class="full">Hlavní mrazák<small>maso</small></span><span class="short">Hlavní</span></th>
-            <th data-field="chladici" data-short="Chlad. box"><span class="full">Chladící box<small>omáčky, dresingy</small></span><span class="short">Chlad. box</span></th>
-            <th data-field="rolls" data-short="Rolls R."><span class="full">Rolls Royce mrazák<small>transport maso</small></span><span class="short">Rolls R.</span></th>
-            <th data-field="transporter" data-short="Transp."><span class="full">Transporter mrazák<small>transport maso</small></span><span class="short">Transp.</span></th>
-            <th data-field="rolex" data-short="ROLEX"><span class="full">Mrazák ROLEX<small>Filip kancelář</small></span><span class="short">ROLEX</span></th>
-            <th data-field="matteo" data-short="Matteo"><span class="full">Chladící box Matteo<small>omáčky pro champa</small></span><span class="short">Matteo</span></th>
+            <th data-field="mrazak" data-short="Mrazák"><span class="full">Mrazák</span><span class="short">Mrazák</span></th>
+            <th data-field="auto1" data-short="Auto 1"><span class="full">Auto 1</span><span class="short">Auto 1</span></th>
+            <th data-field="auto2" data-short="Auto 2"><span class="full">Auto 2</span><span class="short">Auto 2</span></th>
+            <th data-field="auto3" data-short="Auto 3"><span class="full">Auto 3</span><span class="short">Auto 3</span></th>
+            <th data-field="box" data-short="Chladící box"><span class="full">Chladící box</span><span class="short">Chladící box</span></th>
           </tr></thead>
           <tbody data-draw="rows"></tbody>
         </table>
@@ -264,17 +273,24 @@ window.dash = (function () {
 </script>
 <script>
 (function () {
-  var COLS = ['hlavni', 'chladici', 'rolls', 'transporter', 'rolex', 'matteo'];
-  var KIND = { hlavni: 'F', chladici: 'C', rolls: 'F', transporter: 'F', rolex: 'F', matteo: 'C' };
-  var NAMES = { hlavni: 'Hlavní mrazák – maso', chladici: 'Chladící box – omáčky, dresingy', rolls: 'Rolls Royce mrazák – transport maso',
-    transporter: 'Transporter mrazák – transport maso', rolex: 'Mrazák ROLEX – Filip kancelář maso na doma', matteo: 'Chladící box Matteo – omáčky pro champa' };
+  var COLS = ['mrazak', 'auto1', 'auto2', 'auto3', 'box'];
+  var KIND = { mrazak: 'F', auto1: 'A', auto2: 'A', auto3: 'A', box: 'C' };
+  var NAMES = { mrazak: 'Mrazák', auto1: 'Auto 1', auto2: 'Auto 2', auto3: 'Auto 3', box: 'Chladící box' };
   var MONTHS = ['leden', 'únor', 'březen', 'duben', 'květen', 'červen', 'červenec', 'srpen', 'září', 'říjen', 'listopad', 'prosinec'];
   var loc = d3.formatLocale({ decimal: ',', thousands: ' ', grouping: [3], currency: ['', ' Kč'], minus: '−' });
   var f1 = loc.format('.1f');
   var DAYS = ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'];
   function parse(s) { var m = /^(\d{4})-(\d\d)-(\d\d) (\d\d):(\d\d)/.exec(s || ''); return m ? new Date(Date.UTC(+m[1], m[2] - 1, +m[3], +m[4], +m[5])) : null; }
-  function isAM(d) { var w = d.getUTCDay(); return w >= 1 && w <= 5 && d.getUTCHours() >= 6 && d.getUTCHours() < 12; }
-  function range(d, k) { var am = isAM(d); return k === 'F' ? (am ? [-18, -14] : [-19.8, -18]) : [0, 4]; }
+  function wd(d) { var w = d.getUTCDay(); return w >= 1 && w <= 5; }
+  function isAM(d) { return wd(d) && d.getUTCHours() >= 7 && d.getUTCHours() <= 9; }
+  function isWork(d) { return wd(d) && d.getUTCHours() >= 8 && d.getUTCHours() < 16; }
+  function carOn(d) { return wd(d) && d.getUTCHours() >= 9 && d.getUTCHours() < 18; }
+  function range(d, k) {
+    if (k === 'F') return isAM(d) ? [-16, -13] : [-19.8, -17];
+    if (k === 'C') return isWork(d) ? [4, 8] : [0, 4];
+    if (!carOn(d)) return null;
+    return d.getUTCHours() <= 10 ? [-19.8, 8] : [-19.8, -17];
+  }
   function label(d) { return DAYS[d.getUTCDay()] + ' ' + d.getUTCDate() + '. ' + (d.getUTCMonth() + 1) + '. ' + d3.utcFormat('%H:%M')(d); }
   function rows() {
     var g = dash.data('teploty');
@@ -284,7 +300,7 @@ window.dash = (function () {
     return { status: 'ok', data: out };
   }
   function monthKey(s) { return String(s).slice(0, 7); }
-  window.kb = { COLS: COLS, KIND: KIND, NAMES: NAMES, MONTHS: MONTHS, f1: f1, parse: parse, isAM: isAM, range: range, label: label, rows: rows, monthKey: monthKey, hours: 24, report: null };
+  window.kb = { COLS: COLS, KIND: KIND, NAMES: NAMES, MONTHS: MONTHS, f1: f1, parse: parse, isAM: isAM, range: range, label: label, rows: rows, monthKey: monthKey, hours: 24, tdev: '' };
 })();
 
 
@@ -294,22 +310,23 @@ window.dash = (function () {
 window.kbXlsx = function (header, body) {
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function col(i) { return String.fromCharCode(65 + i); }
-  var x = ['<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'];
+  var x = ['<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="1" width="20" customWidth="1"/><col min="2" max="2" width="20" customWidth="1"/></cols><sheetData>'];
   [header].concat(body).forEach(function (row, ri) {
     x.push('<row r="' + (ri + 1) + '">');
     row.forEach(function (v, ci) {
       var ref = col(ci) + (ri + 1);
-      if (typeof v === 'number' && isFinite(v)) x.push('<c r="' + ref + '"><v>' + v + '</v></c>');
+      if (typeof v === 'number' && isFinite(v)) x.push('<c r="' + ref + '" s="1"><v>' + v + '</v></c>');
       else if (v != null && v !== '') x.push('<c r="' + ref + '" t="inlineStr"><is><t>' + esc(v) + '</t></is></c>');
     });
     x.push('</row>');
   });
   x.push('</sheetData></worksheet>');
   var files = [
-    ['[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>'],
+    ['[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'],
     ['_rels/.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
     ['xl/workbook.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Teploty" sheetId="1" r:id="rId1"/></sheets></workbook>'],
-    ['xl/_rels/workbook.xml.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>'],
+    ['xl/_rels/workbook.xml.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'],
+    ['xl/styles.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="0.0"/></numFmts><fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'],
     ['xl/worksheets/sheet1.xml', x.join('')]
   ];
   var enc = new TextEncoder(), table = [];
@@ -334,11 +351,18 @@ window.kbXlsx = function (header, body) {
 </script>
 
 <script>
-document.querySelectorAll('.kb-seg button').forEach(function (b) {
+document.querySelectorAll('[data-range]').forEach(function (b) {
   b.addEventListener('click', function () {
     window.kb.hours = +b.getAttribute('data-range');
-    document.querySelectorAll('.kb-seg button').forEach(function (x) { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+    document.querySelectorAll('[data-range]').forEach(function (x) { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
     dash.draw('chart');
+  });
+});
+document.querySelectorAll('[data-tdev]').forEach(function (b) {
+  b.addEventListener('click', function () {
+    window.kb.tdev = b.getAttribute('data-tdev');
+    document.querySelectorAll('[data-tdev]').forEach(function (x) { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+    dash.draw('rows');
   });
 });
 document.querySelectorAll('[data-jump]').forEach(function (a) {
@@ -368,9 +392,10 @@ dash.draw('badge', function (el) {
   el.className = 'kb-badge';
   if (R.status !== 'ok' || !R.data.length) { el.textContent = '—'; return; }
   var last = R.data[R.data.length - 1], v = last[c], r = kb.range(last.d, kb.KIND[c]);
+  if (!r) { el.classList.add('off'); el.textContent = 'Mražení vypnuto'; return; }
   var ok = v != null && v >= r[0] && v <= r[1];
   if (!ok) el.classList.add('bad');
-  el.textContent = ok ? 'V normě' : 'Mimo rozsah';
+  el.textContent = ok ? (kb.KIND[c] === 'A' && last.d.getUTCHours() <= 10 ? 'Zchlazuje' : 'V normě') : 'Mimo rozsah';
 });
 
 dash.draw('months', function (el) {
@@ -390,13 +415,13 @@ dash.draw('chart', function (el) {
   var data = all.filter(function (r) { return r.d >= start; });
   el.replaceChildren();
   var W = Math.max(220, el.clientWidth), H = 120, m = { t: 8, r: 10, b: 22, l: 40 };
-  var color = k === 'F' ? '#ffffff' : '#8fe9ff';
+  var color = k === 'F' ? '#ffffff' : k === 'A' ? '#ffd36b' : '#8fe9ff';
   var x = d3.scaleUtc().domain([data[0].d, end]).range([m.l, W - m.r]);
   if (data.length === 1) x.domain([new Date(end - 3600e3), end]);
-  var y = (k === 'F' ? d3.scaleLinear().domain([-20.5, -13.5]) : d3.scaleLinear().domain([-0.5, 4.5])).range([H - m.b, m.t]);
+  var y = (k === 'F' ? d3.scaleLinear().domain([-20.5, -12.5]) : k === 'A' ? d3.scaleLinear().domain([-20.5, 12.5]) : d3.scaleLinear().domain([-0.5, 8.5])).range([H - m.b, m.t]);
   var svg = d3.select(el).append('svg').attr('width', W).attr('height', H).attr('role', 'img').attr('aria-label', 'Průběh teploty za posledních ' + kb.hours + ' hodin');
   svg.append('g').attr('class', 'grid').attr('transform', 'translate(' + m.l + ',0)').call(d3.axisLeft(y).ticks(3).tickSize(-(W - m.l - m.r)).tickFormat(''));
-  var band = d3.area().curve(d3.curveStepAfter).x(function (r) { return x(r.d); })
+  var band = d3.area().curve(d3.curveStepAfter).defined(function (r) { return !!kb.range(r.d, k); }).x(function (r) { return x(r.d); })
     .y0(function (r) { return y(kb.range(r.d, k)[0]); }).y1(function (r) { return y(kb.range(r.d, k)[1]); });
   svg.append('path').datum(data).attr('d', band).style('fill', '#ffffff').style('opacity', .08);
   var line = d3.line().x(function (r) { return x(r.d); }).y(function (r) { return y(r[c]); });
@@ -427,20 +452,19 @@ dash.draw('chart', function (el) {
     .on('pointerleave', function () { tip.style('display', 'none'); dot.style('display', 'none'); });
 });
 
-window.kbFillRows = function (tb, list) {
+window.kbFillRows = function (tb, list, cols) {
   tb.replaceChildren();
   var ths = {}, table = tb.closest('table');
   if (table) table.querySelectorAll('th[data-field]').forEach(function (th) { ths[th.getAttribute('data-field')] = th.getAttribute('data-short') || th.textContent; });
   list.forEach(function (r) {
     var tr = document.createElement('tr');
-    if (kb.isAM(r.d)) tr.className = 'am';
     tr.setAttribute('data-key', r.cas);
     var t = document.createElement('td'); t.textContent = kb.label(r.d); tr.appendChild(t);
-    kb.COLS.forEach(function (c) {
+    (cols || kb.COLS).forEach(function (c) {
       var td = document.createElement('td'), v = r[c], rg = kb.range(r.d, kb.KIND[c]);
       td.textContent = v == null ? '—' : kb.f1(v);
       td.setAttribute('data-label', ths[c] || c);
-      if (v != null && (v < rg[0] || v > rg[1])) td.className = 'bad';
+      if (v != null && rg && (v < rg[0] || v > rg[1])) td.className = 'bad';
       tr.appendChild(td);
     });
     tb.appendChild(tr);
@@ -450,7 +474,10 @@ window.kbFillRows = function (tb, list) {
 dash.draw('rows', function (tb) {
   var R = kb.rows();
   if (R.status !== 'ok' || !R.data.length) { tb.replaceChildren(); return; }
-  kbFillRows(tb, R.data.slice().reverse());
+  var cols = kb.tdev ? [kb.tdev] : kb.COLS;
+  var table = tb.closest('table');
+  if (table) table.querySelectorAll('th[data-field]').forEach(function (th) { var f = th.getAttribute('data-field'); th.hidden = f !== 'cas' && cols.indexOf(f) < 0; });
+  kbFillRows(tb, R.data.slice().reverse(), cols);
 });
 
 dash.draw('msg', {
@@ -466,14 +493,15 @@ dash.draw('msg', {
       R.data.forEach(function (r) { var k = kb.monthKey(r.cas); if (k.slice(5, 7) === v && keys.indexOf(k) < 0) keys.push(k); });
       if (!keys.length) { say('Pro měsíc ' + v + ' nejsou žádná data.', true); return null; }
       var key = keys[keys.length - 1];
-      return { key: key, list: R.data.filter(function (r) { return kb.monthKey(r.cas) === key; }), name: kb.MONTHS[+v - 1] + ' ' + key.slice(0, 4) };
+      var ds = document.getElementById('kb-dev'), dev = ds ? ds.value : kb.COLS[0];
+      return { key: key, dev: dev, dname: kb.NAMES[dev], list: R.data.filter(function (r) { return kb.monthKey(r.cas) === key; }), name: kb.MONTHS[+v - 1] + ' ' + key.slice(0, 4) };
     }
     function build(sel) {
-      var header = ['Datum a čas'].concat(kb.COLS.map(function (c) { return kb.NAMES[c] + ' (°C)'; }));
-      var body = sel.list.map(function (r) { return [r.cas].concat(kb.COLS.map(function (c) { return r[c]; })); });
+      var header = ['Datum a čas', sel.dname + ' (°C)'];
+      var body = sel.list.map(function (r) { return [r.cas, r[sel.dev]]; });
       return window.kbXlsx(header, body);
     }
-    function fname(sel) { return 'teploty-' + sel.key + '.xlsx'; }
+    function fname(sel) { return 'teploty-' + sel.dev + '-' + sel.key + '.xlsx'; }
     var XT = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
     async function save(sel, bytes) {
       try {
@@ -490,22 +518,23 @@ dash.draw('msg', {
       try {
         if (act === 'download') {
           var r = await save(sel, build(sel));
-          say(r === 'saved' ? 'Soubor ' + fname(sel) + ' (' + sel.list.length + ' měření) je připravený ke stažení.' : r === 'declined' ? 'Stahování bylo zrušeno.' : r === 'busy' ? 'Potvrď prosím otevřené okno stahování.' : 'Stažení se nepodařilo.', r !== 'saved');
+          say(r === 'saved' ? sel.dname + ': soubor ' + fname(sel) + ' (' + sel.list.length + ' měření) je připravený ke stažení.' : r === 'declined' ? 'Stahování bylo zrušeno.' : r === 'busy' ? 'Potvrď prosím otevřené okno stahování.' : 'Stažení se nepodařilo.', r !== 'saved');
         } else if (act === 'email') {
           var to = ((document.getElementById('kb-email') || {}).value || '').trim();
           if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) { say('Zadej platnou e-mailovou adresu příjemce.', true); return; }
-          var subj = 'Teploty mrazáků – ' + sel.name;
+          var subj = 'Teploty – ' + sel.dname + ' – ' + sel.name;
           var r2 = await save(sel, build(sel));
           var a = document.createElement('a');
-          a.href = 'mailto:' + to + '?subject=' + encodeURIComponent(subj) + '&body=' + encodeURIComponent('Dobrý den,\n\nv příloze posílám data teplot za ' + sel.name + ' (soubor ' + fname(sel) + ').');
+          a.href = 'mailto:' + to + '?subject=' + encodeURIComponent(subj) + '&body=' + encodeURIComponent('Dobrý den,\n\nv příloze posílám data teplot (' + sel.dname + ') za ' + sel.name + ' (soubor ' + fname(sel) + ').');
           a.click();
           say(r2 === 'saved' ? 'Soubor ' + fname(sel) + ' se stáhl a otevřel se nový e-mail pro ' + to + ' – přilož soubor a odešli.' : 'Otevřel se nový e-mail pro ' + to + '; soubor se nestáhl, zkus tlačítko Stáhnout.', r2 !== 'saved');
         } else if (act === 'online') {
           var tabs = window.KB_SHEET.tabs;
           if (tabs.indexOf(sel.key) < 0) { say('Pro ' + sel.name + ' zatím není list v Google Sheets.', true); return; }
-          var url = 'https://docs.google.com/spreadsheets/d/' + window.KB_SHEET.id + '/edit#gid=' + sel.key.replace('-', '');
+          var gid = (kb.COLS.indexOf(sel.dev) + 1) * 1000000 + +sel.key.replace('-', '');
+          var url = 'https://docs.google.com/spreadsheets/d/' + window.KB_SHEET.id + '/edit#gid=' + gid;
           var link = document.createElement('a'); link.href = url; link.target = '_blank'; link.rel = 'noopener'; link.click();
-          say('Tabulka za ' + sel.name + ' se otevírá v Google Sheets. Stáhnout: Soubor → Stáhnout. Upravit: Soubor → Vytvořit kopii.');
+          say(sel.dname + ' – tabulka za ' + sel.name + ' se otevírá v Google Sheets. Stáhnout: Soubor → Stáhnout. Upravit: Soubor → Vytvořit kopii.');
         }
       } catch (e) {
         var code = e && e.code;
